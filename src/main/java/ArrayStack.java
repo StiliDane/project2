@@ -28,7 +28,7 @@ public class ArrayStack<T> {
         size++;
     }
 
-    /** looks at the next element in the stack and removbe it */
+    /** looks at the next element in the stack and remove it */
     public T pop(){
         if (this.isEmpty()) {
             throw new IndexOutOfBoundsException("Stack is empty");

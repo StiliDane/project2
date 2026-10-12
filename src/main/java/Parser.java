@@ -8,12 +8,14 @@ public class Parser {
             throw new IllegalArgumentException("empty input");
         }
 
+        // parse string into tokens
         String[] tokens = input.trim().split("\\s+");
         ArrayStack<AST> exprStack = ArrayStack.emptyStack();
         ArrayStack<String> opStack = ArrayStack.emptyStack();
 
         for (String token : tokens) {
             if (isOperator(token)) {
+                // while the list isn't empty and the current operation is not inside a parenthesis check for precedence
                 while (!opStack.isEmpty() && !opStack.peek().equals("(")) {
                     String topOp = opStack.peek();
                     int precToken = precedence(token);
@@ -25,11 +27,15 @@ public class Parser {
                         break;
                     }
                 }
+
+                // add operator to stack
                 opStack.push(token);
             } else if (token.equals("(")) {
+                // add parenthesis to stack
                 opStack.push(token);
             } else if (token.equals(")")) {
                 while (!opStack.isEmpty() && !opStack.peek().equals("(")) {
+                    // close current parenthesis
                     applyOperator(exprStack, opStack.pop());
                 }
                 if (opStack.isEmpty()) {
@@ -37,6 +43,7 @@ public class Parser {
                 }
                 opStack.pop(); // Discard '('
             } else {
+                // assume the number is a double and try to parse it
                 try {
                     double num = Double.parseDouble(token);
                     exprStack.push(new NumNode(num));
@@ -46,6 +53,7 @@ public class Parser {
             }
         }
 
+        // evaluate the tree and apply operators
         while (!opStack.isEmpty()) {
             String op = opStack.pop();
             if (op.equals("(")) {
@@ -54,6 +62,7 @@ public class Parser {
             applyOperator(exprStack, op);
         }
 
+        // exprStack should end with 1 number exactly if operators match numbers properly
         if (exprStack.isEmpty()) {
             throw new IllegalArgumentException("empty input");
         }
@@ -75,11 +84,11 @@ public class Parser {
 
         // operate on tokens from left to right
         for (String token : tokens) {
-            // if it is an operator create a tree for it
+            // if it is an operator evaluate it
             if (isOperator(token)) {
                 applyOperator(stack, token);
             } else {
-                // if it is a number cast it to a double and add it to the stack
+                // assume the number is a double and try to parse it
                 try {
                     double num = Double.parseDouble(token);
                     stack.push(new NumNode(num));
@@ -89,6 +98,7 @@ public class Parser {
             }
         }
 
+        // exprStack should end with 1 number exactly if operators match numbers properly
         if (stack.size() > 1) {
             throw new IllegalArgumentException("too many operands");
         }
@@ -105,7 +115,7 @@ public class Parser {
                 || token.equals("/") || token.equals("^");
     }
 
-    /** Creates a tree of the given operator to be saved for later */
+    /** Creates a tree of the given operator to be evaluated */
     private static void applyOperator(ArrayStack<AST> stack, String op) {
         if (stack.size() < 2) {
             throw new IllegalArgumentException("insufficient operands");
@@ -119,10 +129,11 @@ public class Parser {
 
     /** returns the priority of what a value should be */
     private static int precedence(String op) {
-        if (op.equals("^")) return 3;
-        if (op.equals("*") || op.equals("/")) return 2;
-        if (op.equals("+") || op.equals("-")) return 1;
-        return 0;
+        return switch (op) {
+            case "^" -> 3;
+            case "*", "/" -> 2;
+            default -> 1;
+        };
     }
 
     /** ^ should be right associative while other operations are left associative */

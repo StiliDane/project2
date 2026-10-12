@@ -95,6 +95,22 @@ public class ParserTest {
     }
 
     @Test
+    public void parseInfix6() {
+        AST result = Parser.parseInfix("3 / 4");
+        assertEquals(new BinopNode("/", new NumNode(3.0), new NumNode(4.0)), result);
+    }
+
+    @Test
+    public void parseInfixPrecedence1() {
+        AST result = Parser.parseInfix("3 * 4 + 2");
+        AST expected = new BinopNode("+",
+                new BinopNode("*", new NumNode(3.0), new NumNode(4.0)),
+                new NumNode(2.0)
+        );
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void parseInfixEmpty1() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> Parser.parseInfix(""));
         assertEquals("empty input", e.getMessage());
@@ -128,5 +144,49 @@ public class ParserTest {
     public void parseInfixMismatchedCloseParen1() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> Parser.parseInfix("2 + 3 )"));
         assertEquals("mismatched close paren", e.getMessage());
+    }
+
+    @Test
+    public void parsePostfixNull1() {
+        Exception e = assertThrows(IllegalArgumentException.class, () -> Parser.parsePostfix(null));
+        assertEquals("empty input", e.getMessage());
+    }
+
+    @Test
+    public void parseInfixNull1() {
+        Exception e = assertThrows(IllegalArgumentException.class, () -> Parser.parseInfix(null));
+        assertEquals("empty input", e.getMessage());
+    }
+
+    @Test
+    public void parseInfixEmptyParens1() {
+        Exception e = assertThrows(IllegalArgumentException.class, () -> Parser.parseInfix("( )"));
+        assertEquals("empty input", e.getMessage());
+    }
+
+    @Test
+    public void parseInfixMinus1() {
+        AST result = Parser.parseInfix("5 - 3");
+        assertEquals(new BinopNode("-", new NumNode(5.0), new NumNode(3.0)), result);
+    }
+
+    @Test
+    public void parseInfixMixedPrecedence1() {
+        AST result = Parser.parseInfix("2 ^ 3 + 1");
+        AST expected = new BinopNode("+",
+                new BinopNode("^", new NumNode(2.0), new NumNode(3.0)),
+                new NumNode(1.0)
+        );
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void parseInfixChainedLeftAssoc1() {
+        AST result = Parser.parseInfix("8 / 4 / 2");
+        AST expected = new BinopNode("/",
+                new BinopNode("/", new NumNode(8.0), new NumNode(4.0)),
+                new NumNode(2.0)
+        );
+        assertEquals(expected, result);
     }
 }
